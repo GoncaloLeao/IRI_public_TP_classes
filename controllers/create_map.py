@@ -9,7 +9,7 @@ import csv
 
 if __name__ == '__main__':
     custom_maps_filepath: str = '../worlds/custom_maps/'
-    map_name: str = 'obstacles'
+    map_name: str = 'mapW'
 
     # Parse the YAML file
     yaml_filepath: str = custom_maps_filepath + map_name + '_config.yaml'
