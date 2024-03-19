@@ -9,7 +9,7 @@ import csv
 
 if __name__ == '__main__':
     custom_maps_filepath: str = '../worlds/custom_maps/'
-    map_name: str = 'mapW'
+    map_name: str = 'obstacles'
 
     # Parse the YAML file
     yaml_filepath: str = custom_maps_filepath + map_name + '_config.yaml'
@@ -85,6 +85,9 @@ if __name__ == '__main__':
         f.write('        }')
         f.write('    ]')
         f.write('    name "solid' + str(index) + '"')
+        # f.write('    boundingObject Box {')
+        # f.write('        size ' + str(resolution) + ' ' + str(resolution) + ' 0.05')
+        # f.write('    }')
         f.write('}')
         """
         Solid {
@@ -97,6 +100,9 @@ if __name__ == '__main__':
                 }
             ]
             name "solid1"
+            boundingObject Box {
+                size 0.125 0.125 0.05
+            }
         }
         """
         index += 1

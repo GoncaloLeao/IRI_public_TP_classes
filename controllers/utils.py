@@ -1,5 +1,5 @@
 """
-Some useful functions for Webots and for working with the epuck robot (https://cyberbotics.com/doc/guide/epuck?version=R2021a).
+Some useful functions, namely for Webots and for working with the epuck robot (https://cyberbotics.com/doc/guide/epuck?version=R2021a).
 By: Gonçalo Leão
 """
 import math
@@ -58,7 +58,7 @@ def cmd_vel(robot: Robot, linear_vel: float, angular_vel: float) -> None:
 def move_forward(robot: Robot, distance: float, linear_vel: float) -> None:
     duration: float = distance / abs(linear_vel)
     cmd_vel(robot, linear_vel, 0)
-    robot.step(int(1000*duration))
+    robot.step(int(1000 * duration))
 
 
 # Alternative solution
@@ -73,7 +73,7 @@ def move_forward2(robot: Robot, distance: float, linear_vel: float) -> None:
 def rotate(robot: Robot, theta: float, angular_vel: float) -> None:
     duration: float = theta / angular_vel
     cmd_vel(robot, 0, angular_vel)
-    robot.step(int(1000*duration))
+    robot.step(int(1000 * duration))
 
 
 # Alternative solution
@@ -83,3 +83,56 @@ def rotate2(robot: Robot, theta: float, angular_vel: float) -> None:
     cmd_vel(robot, 0, angular_vel)
     while robot.getTime() < start_time + duration:
         robot.step()
+
+
+def bresenham(initial_point: (int, int), final_point: (int, int)) -> [(int, int)]:
+    if abs(final_point[1] - initial_point[1]) < abs(final_point[0] - initial_point[0]):
+        if initial_point[0] > final_point[0]:
+            return bresenham_low_slope_line(final_point, initial_point)
+        else:
+            return bresenham_low_slope_line(initial_point, final_point)
+    else:
+        if initial_point[1] > final_point[1]:
+            return bresenham_high_slope_line(final_point, initial_point)
+        else:
+            return bresenham_high_slope_line(initial_point, final_point)
+
+
+def bresenham_low_slope_line(initial_point: (int, int), final_point: (int, int)) -> [(int, int)]:
+    points: [(int, int)] = []
+    dx = final_point[0] - initial_point[0]
+    dy = final_point[1] - initial_point[1]
+    yi = 1
+    if dy < 0:
+        yi = -1
+        dy = -dy
+    D = (2 * dy) - dx
+    y = initial_point[1]
+    for x in range(initial_point[0], final_point[0] + 1):
+        points.append((x, y))
+        if D > 0:
+            y = y + yi
+            D = D + (2 * (dy - dx))
+        else:
+            D = D + 2 * dy
+    return points
+
+
+def bresenham_high_slope_line(initial_point: (int, int), final_point: (int, int)) -> [(int, int)]:
+    points: [(int, int)] = []
+    dx = final_point[0] - initial_point[0]
+    dy = final_point[1] - initial_point[1]
+    xi = 1
+    if dx < 0:
+        xi = -1
+        dx = -dx
+    D = (2 * dx) - dy
+    x = initial_point[0]
+    for y in range(initial_point[1], final_point[1] + 1):
+        points.append((x, y))
+        if D > 0:
+            x = x + xi
+            D = D + (2 * (dx - dy))
+        else:
+            D = D + 2 * dx
+    return points
