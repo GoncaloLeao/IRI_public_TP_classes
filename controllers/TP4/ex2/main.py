@@ -48,14 +48,12 @@ class ProbabilisticOccupancyGrid(OccupancyGrid):
             self.occupancy_grid[coords] = ...  # TODO
 
     def get_probability_grid(self) -> np.ndarray:
-        def my_vectorized_func(m):
-            return np.round(2*(1 - (1 / (1 + np.exp(m)))))/0.5
-
-        return my_vectorized_func(self.occupancy_grid)
+        # TODO
+        pass
 
     def get_log_odd(self, prob: float) -> float:
         # TODO
-        return 0
+        pass
 
 
 def main() -> None:
