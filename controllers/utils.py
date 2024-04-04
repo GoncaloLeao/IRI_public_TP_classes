@@ -136,3 +136,32 @@ def bresenham_high_slope_line(initial_point: (int, int), final_point: (int, int)
         else:
             D = D + 2 * dx
     return points
+
+
+def bresenham_extended(initial_point: (int, int), final_point: (int, int), min_coords: (int, int), max_coords: (int, int)) -> [(int, int)]:
+    points: [(int, int)] = []
+    x1, y1 = initial_point
+    x2, y2 = final_point
+
+    dx = abs(x2 - x1)
+    dy = abs(y2 - y1)
+    sx = 1 if x1 < x2 else -1
+    sy = 1 if y1 < y2 else -1
+
+    err = dx - dy
+
+    x = x1
+    y = y1
+    while True:
+        if not (min_coords[0] <= x <= max_coords[0] and min_coords[1] <= y <= max_coords[1]):
+            break
+        points.append((x, y))
+
+        e2 = 2 * err
+        if e2 > -dy:
+            err -= dy
+            x += sx
+        if e2 < dx:
+            err += dx
+            y += sy
+    return points
