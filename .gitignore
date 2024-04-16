@@ -3,3 +3,4 @@
 __pycache__/
 *.jpg
 *.wbproj
+controllers/TP4/*/*.png
