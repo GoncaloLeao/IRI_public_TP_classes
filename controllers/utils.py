@@ -3,8 +3,11 @@ Some useful functions, namely for Webots and for working with the epuck robot (h
 By: Gonçalo Leão
 """
 import math
+from typing import List
 
-from controller import Robot, Motor, Supervisor, Node
+import numpy as np
+
+from controller import Robot, Motor, Supervisor, Node, Field
 from controller.device import Device
 
 
@@ -71,18 +74,41 @@ def move_forward2(robot: Robot, distance: float, linear_vel: float) -> None:
 
 
 def rotate(robot: Robot, theta: float, angular_vel: float) -> None:
-    duration: float = theta / angular_vel
-    cmd_vel(robot, 0, angular_vel)
+    angular_vel = abs(angular_vel)
+    duration: float = abs(theta) / angular_vel
+    cmd_vel(robot, 0, angular_vel if theta > 0 else -angular_vel)
     robot.step(int(1000 * duration))
 
 
 # Alternative solution
 def rotate2(robot: Robot, theta: float, angular_vel: float) -> None:
-    duration: float = theta / angular_vel
+    angular_vel = abs(angular_vel)
+    duration: float = abs(theta) / angular_vel
     start_time: float = robot.getTime()
-    cmd_vel(robot, 0, angular_vel)
+    cmd_vel(robot, 0, angular_vel if theta > 0 else -angular_vel)
     while robot.getTime() < start_time + duration:
         robot.step()
+
+
+def move_robot_to(robot: Robot, robot_position: (float, float), robot_orientation: float,
+                  destination_position: (float, float),
+                  linear_vel: float, angular_vel: float) -> None:
+    desired_orientation: float = math.atan2(destination_position[1] - robot_position[1],
+                                            destination_position[0] - robot_position[0])
+    desired_theta: float = (((desired_orientation - robot_orientation) + math.pi) % (2 * math.pi)) - math.pi
+    rotate(robot, desired_theta, angular_vel)
+
+    desired_distance: float = math.hypot(destination_position[0] - robot_position[0],
+                                         destination_position[1] - robot_position[1])
+    move_forward(robot, desired_distance, linear_vel)
+
+
+def warp_robot(supervisor: Supervisor, robot_def_name: str, new_position: (float, float)) -> None:
+    robot_node = supervisor.getFromDef(robot_def_name)
+    trans_field: Field = robot_node.getField("translation")
+    translation: List[float] = [new_position[0], new_position[1], 0]
+    trans_field.setSFVec3f(translation)
+    robot_node.resetPhysics()
 
 
 def bresenham(initial_point: (int, int), final_point: (int, int)) -> [(int, int)]:
@@ -138,7 +164,8 @@ def bresenham_high_slope_line(initial_point: (int, int), final_point: (int, int)
     return points
 
 
-def bresenham_extended(initial_point: (int, int), final_point: (int, int), min_coords: (int, int), max_coords: (int, int)) -> [(int, int)]:
+def bresenham_extended(initial_point: (int, int), final_point: (int, int), min_coords: (int, int),
+                       max_coords: (int, int)) -> [(int, int)]:
     points: [(int, int)] = []
     x1, y1 = initial_point
     x2, y2 = final_point
@@ -165,3 +192,64 @@ def bresenham_extended(initial_point: (int, int), final_point: (int, int), min_c
             err += dx
             y += sy
     return points
+
+
+# Based on: https://www.jeffreythompson.org/collision-detection/line-rect.php
+# Tests whether the segments (x1,y1)-(x2,y2) and (x3,y3)-(x4,y4) collide.
+def collides_segment_segment(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, x4: float,
+                             y4: float) -> bool:
+    denom: float = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+    if denom == 0:
+        return False
+
+    uA: float = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom
+    uB: float = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom
+
+    if 0 <= uA <= 1 and 0 <= uB <= 1:
+        return True
+
+    return False
+
+
+def collides_point_rectangle(x: float, y: float, rx: float, ry: float, w: float, h: float) -> bool:
+    return rx <= x <= rx + w and ry <= y <= ry + h
+
+
+# Tests whether the segment (x1,y1)-(x2,y2) and the axis aligned rectangle with bottom-left corner (rx,ry) and dimensions w x h collide.
+def collides_segment_rectangle(x1: float, y1: float, x2: float, y2: float, rx: float, ry: float, w: float,
+                               h: float) -> bool:
+    # Check if the segment collides with one of the rectangle's sides
+    if collides_segment_segment(x1, y1, x2, y2, rx, ry, rx, ry + h):  # left side
+        return True
+    if collides_segment_segment(x1, y1, x2, y2, rx + w, ry, rx + w, ry + h):  # right side
+        return True
+    if collides_segment_segment(x1, y1, x2, y2, rx, ry, rx + w, ry):  # top side
+        return True
+    if collides_segment_segment(x1, y1, x2, y2, rx, ry + h, rx + w, ry + h):  # bottom side
+        return True
+
+    # This leaves to cases: the segment is either entirely inside or outside the rectangle.
+    # So one can test if either (any) of the segment endpoints is inside the rectangle
+    return collides_point_rectangle(x1, y1, rx, ry, w, h)
+
+
+def is_collision_free_line(x1: float, y1: float, x2: float, y2: float, obstacle_cloud: np.ndarray) -> bool:
+    obstacle_size: float = 0.001
+    min_obstacle_dist: float = 0.05
+    for obstacle in obstacle_cloud:
+        if collides_segment_rectangle(x1, y1, x2, y2,
+                                      obstacle[0] - min_obstacle_dist, obstacle[1] - min_obstacle_dist,
+                                      obstacle_size + 2 * min_obstacle_dist, obstacle_size + 2 * min_obstacle_dist):
+            return False
+    return True
+
+
+def is_collision_free_point(x: float, y: float, obstacle_cloud: np.ndarray) -> bool:
+    obstacle_size: float = 0.001
+    min_obstacle_dist: float = 0.05
+    for obstacle in obstacle_cloud:
+        if collides_point_rectangle(x, y,
+                                    obstacle[0] - min_obstacle_dist, obstacle[1] - min_obstacle_dist,
+                                    obstacle_size + 2 * min_obstacle_dist, obstacle_size + 2 * min_obstacle_dist):
+            return False
+    return True
