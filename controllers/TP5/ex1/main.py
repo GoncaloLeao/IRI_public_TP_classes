@@ -124,7 +124,10 @@ def main() -> None:
         return
 
     # Create the graph and find the shortest path
+    start = time.time()
     grid_graph = create_grid_graph(robot_position, final_position, obstacle_cloud)
+    end = time.time()
+    print("Elapsed time for creating the grid graph : ", end - start, " seconds")
     vertex_positions: Dict[int, (float, float)] = nx.get_node_attributes(grid_graph.visual_graph, 'pos')
     vertex_distances: Dict[int, float] = {}
     for (id, position) in vertex_positions.items():

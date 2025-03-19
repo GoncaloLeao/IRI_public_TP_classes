@@ -97,9 +97,6 @@ def main() -> None:
                                         actual_position, actual_orientation,
                                         [get_translation(tf)], [get_rotation(tf)])
 
-    while robot.step() != -1:
-        pass
-
 
 if __name__ == '__main__':
     main()

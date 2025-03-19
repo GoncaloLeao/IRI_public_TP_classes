@@ -201,9 +201,6 @@ def main() -> None:
                                         actual_position, actual_orientation,
                                         estimated_translations, estimated_rotations)
 
-    while robot.step() != -1:
-        pass
-
 
 if __name__ == '__main__':
     main()

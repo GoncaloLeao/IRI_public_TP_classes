@@ -4,6 +4,7 @@ By: Gonçalo Leão
 """
 import csv
 import math
+import time
 import random
 from typing import Dict
 
@@ -87,7 +88,7 @@ def main() -> None:
     robot: Robot = Robot()
 
     custom_maps_filepath: str = '../../../worlds/custom_maps/'
-    map_name: str = 'mapW'
+    map_name: str = 'obstacles'
     obstacle_points_filename: str = custom_maps_filepath + map_name + '_points.csv'
     final_position: (float, float) = (1.8, 1.8)
 
@@ -118,12 +119,18 @@ def main() -> None:
         return
 
     # Create the graph and find the path
+    start = time.time()
     found_path, rrt_graph = create_rrt(robot_position, final_position, obstacle_cloud)
+    end = time.time()
+    print("Elapsed time for creating the RRT graph : ", end - start, " seconds")
     if not found_path:
         print("No path found")
         return
     vertex_positions: Dict[int, (float, float)] = nx.get_node_attributes(rrt_graph.visual_graph, 'pos')
+    start = time.time()
     path: [Vertex] = rrt_graph.get_path(0, len(rrt_graph.vertex_set) - 1)
+    end = time.time()
+    print("Elapsed time for finding the path : ", end - start, " seconds")
 
     # Mark with a new color the unvisited vertices and the ones in the path
     new_vertex_colors: dict = {}

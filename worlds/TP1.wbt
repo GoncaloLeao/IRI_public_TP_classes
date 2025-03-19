@@ -1,4 +1,4 @@
-#VRML_SIM R2023b utf8
+#VRML_SIM R2025a utf8
 
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
@@ -37,10 +37,12 @@ Robot {
     }
     Lidar {
       translation 0 0 0.03
-      horizontalResolution 100
+      horizontalResolution 111
+      fieldOfView 6.28319
       numberOfLayers 1
       near 0.05
       minRange 0.05
+      maxRange 3
     }
     Compass {
     }

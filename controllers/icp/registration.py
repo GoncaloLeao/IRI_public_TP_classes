@@ -86,10 +86,10 @@ def plotter(fixed, moving, i, is3D: bool) -> None:
         ax.set_xlabel('X Label')
         ax.set_ylabel('Y Label')
 
-    # filename = str(i) + 'plot.png'
-    # fig.savefig(filename)
-    # plt.close(fig)
-    plt.show()
+    filename = str(i) + 'plot.png'
+    fig.savefig(filename)
+    # plt.show()
+    plt.close(fig)
     return
 
 
@@ -133,7 +133,7 @@ def ICPSVD(fixed, moving, thres: float, maxIter: int, pltornot: bool, erpltornot
         if verbose:
             print('{} Cycle the MSE is equal to {}'.format(i + 1, err))
         if pltornot:
-            plotter(fixed, moving, i, is3D)
+            plotter(fixed, moving, i+1, is3D)
             """Error Check """
         if abs(preverr - err) < thres:
             """Create a Homogeneous Matrix of the Results and plot"""
