@@ -1,0 +1,4 @@
+image: TP6.png
+resolution: 0.016
+origin: [0.000000, 0.000000, 0.000000]
+occupied_thresh: 0.65
