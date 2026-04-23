@@ -110,6 +110,13 @@ def warp_robot(supervisor: Supervisor, robot_def_name: str, new_position: (float
     trans_field.setSFVec3f(translation)
     robot_node.resetPhysics()
 
+def full_warp_robot(supervisor: Supervisor, robot_def_name: str, new_position, new_orientation) -> None:
+    robot_node = supervisor.getFromDef(robot_def_name)
+    trans_field: Field = robot_node.getField("translation")
+    trans_field.setSFVec3f(new_position)
+    rot_field: Field = robot_node.getField("rotation")
+    rot_field.setSFRotation(new_orientation)
+    robot_node.resetPhysics()
 
 def bresenham(initial_point: (int, int), final_point: (int, int)) -> [(int, int)]:
     if abs(final_point[1] - initial_point[1]) < abs(final_point[0] - initial_point[0]):
